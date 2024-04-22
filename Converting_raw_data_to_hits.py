@@ -22,25 +22,48 @@ def extract_numbers_from_filename(filename):
     numbers = re.findall(r'-?\d+\.\d+|-?\d+', filename)
     return [float(num) for num in numbers]
 
+def extract_substring_from_path(input_path, base_folder):
+    
+    # Find the position of the base_folder in the input_path
+    base_index = input_path.find(base_folder)
+    
+    if base_index != -1:
+        # Extract the substring starting from the base_folder onwards
+        extracted_substring = input_path[base_index:]
+        return extracted_substring
+    else:
+        # Return an empty string if base_folder is not found in input_path
+        return 'hi'
 
+# Example usage:
+
+base_folder = "/Sweep_data"
 
 parser = argparse.ArgumentParser(description='Generate a heatmap from a CSV file.')
 parser.add_argument('filename', type=str, help='Path to the CSV file')
 args = parser.parse_args()
 
-path_string = "C:/Users/lexda/Desktop/crosstalk_data_zip/Sweep_data_13_03_24/95_to_100_in_0.1_steps"
 path_string = args.filename
-
-
+Path_to_output_string_hist = 'C:/Users/lexda/VsProjects/gain_measurements_torch/Hist_outputs/'
+Path_to_output_string = 'C:/Users/lexda/VsProjects/gain_measurements_torch/'
 
 DATA_DIR = Path(path_string)
+
+OUTPUT_DIR = Path(Path_to_output_string)
+OUTPUT_DIR_HIST = Path(Path_to_output_string_hist)
+
 start_postion = extract_numbers_from_filename(path_string)
+
 start_postion_co = (start_postion[3] + (start_postion[4] - start_postion[3]) * 0.5)
+extracted_string = extract_substring_from_path(path_string, base_folder)
+print(extracted_string)  
 
 print(start_postion_co)
 print(DATA_DIR)
 
-directory = DATA_DIR / 'hist'
+test = os.path.join(OUTPUT_DIR, extracted_string)
+directory = os.path.join(Path_to_output_string_hist, extracted_string.replace('/', '_')) 
+directory = Path(directory)
 
 # Create directory and its parents if they don't exist
 os.makedirs(directory, exist_ok=True)
@@ -62,13 +85,12 @@ for pref in MIN_FILES_PREFIX:
         sig_min = load_data(f).mean()
         #dn_min = load_data(f.with_name(f.name.replace("sig", "dn"))).mean()
         
-    
         counts, bins  = np.histogram(hist_data, bins=200)
         bins = bins[:-1]
         hist_data = {'bins': bins, 'counts': counts}
         df = pd.DataFrame(hist_data)
         
-        df.to_csv( DATA_DIR/f'hist/histogram_{pref}_{start_postion_co+y:.1f}.txt', index=False)
+        df.to_csv( directory/f'histogram_{pref}_{start_postion_co+y:.1f}.txt', index=False)
 
     
         #data = sig_min - dn_min
@@ -95,37 +117,6 @@ for pref in MIN_FILES_PREFIX:
    
 
     plt.legend()
-plt.show()
+plt.savefig(OUTPUT_DIR/'plots/plot.png')
 
-# Directory containing the CSV files
-folder_path = DATA_DIR
 
-# List all CSV files in the folder
-csv_files = [f for f in os.listdir(folder_path) if f.endswith('.csv')]
-
-# Select a CSV file
-file_name = csv_files[50]
-file_path = os.path.join(folder_path, file_name)
-
-# Read the CSV file using pandas
-df = pd.read_csv(file_path, names=["x", "y"])
-print(df)
-
-# Extract the second row
-second_row = df.iloc[150]
-
-# Plot the histogram
-counts, bins = np.histogram(df.y, bins=200)
-print(counts[40])
-counts, bins, bars = plt.hist(df.y, bins=200, alpha=0.7, color='blue', edgecolor='black', log=True)
-print(counts[40])
-bins = bins[:-1]
-hist_data = {'bins': bins, 'counts': counts}
-plt.plot(bins, counts)
-plt.xlabel('Values')
-plt.ylabel('Frequency')
-plt.title('Histogram of Second Row')
-plt.show()
-print(counts)
-df = pd.DataFrame(hist_data)
-#df.to_csv(DATA_DIR /'histogram.txt', index=False)
