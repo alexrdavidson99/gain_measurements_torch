@@ -34,12 +34,18 @@ def extract_substring_from_path(input_path, base_folder):
         return 'did_not_find_base_folder_in_input_path'
 
 
+DEFAULT_MIN = 1
+DEFAULT_MAX = 5
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Generate a heatmap from a CSV file.')
 parser.add_argument('filename', type=str, help='Path to the CSV file')
+parser.add_argument('--start', type=int, default=DEFAULT_MIN, help='Starting number for file prefixes')
+parser.add_argument('--end', type=int, default=DEFAULT_MAX, help='Ending number for file prefixes')
 args = parser.parse_args()
 path_string = args.filename
+DEFAULT_MIN = args.start
+DEFAULT_MAX = args.end
 
 
 Path_to_output_string_hist = '../gain_measurements_torch/Hist_outputs/'
@@ -64,7 +70,7 @@ directory = Path(directory)
 os.makedirs(directory, exist_ok=True)
 
 
-MIN_FILES_PREFIX = [f"F{i}" for i in range(1, 5)]
+MIN_FILES_PREFIX = [f"F{i}" for i in range(DEFAULT_MIN, DEFAULT_MAX)]
 offsets = {'F1': -0.0001512, 'F2': -0.000430, 'F3': -0.000222, 'F4': +0.000002}
 
 plt.figure(figsize=(14, 8))
