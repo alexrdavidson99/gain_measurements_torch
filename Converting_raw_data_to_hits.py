@@ -42,8 +42,8 @@ args = parser.parse_args()
 path_string = args.filename
 
 
-Path_to_output_string_hist = 'C:/Users/lexda/VsProjects/gain_measurements_torch/Hist_outputs/'
-Path_to_output_string = 'C:/Users/lexda/VsProjects/gain_measurements_torch/'
+Path_to_output_string_hist = '../gain_measurements_torch/Hist_outputs/'
+Path_to_output_string = '../gain_measurements_torch/'
 
 DATA_DIR = Path(path_string)
 print(DATA_DIR)
@@ -108,4 +108,5 @@ for pref in MIN_FILES_PREFIX:
     plt.tick_params(axis='y',which='major', direction="out", top="on", right="on", bottom="on", length=8, labelsize=15)
     plt.legend()
 
-plt.savefig(OUTPUT_DIR/'plots/plot.png')
+plot = extracted_string.replace('/', '_')
+plt.savefig(OUTPUT_DIR/ f'plots/plots_{plot}.png')
