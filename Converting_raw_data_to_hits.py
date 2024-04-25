@@ -61,7 +61,7 @@ start_postion = extract_numbers_from_filename(path_string)
 start_postion_co = (start_postion[3] + (start_postion[4] - start_postion[3]) * 0.5)
 print(start_postion_co)
 
-base_folder = "/Sweep_data"
+base_folder = "data"
 extracted_string = extract_substring_from_path(path_string, base_folder)
 
 # makes the directory for the output files based on the name of the input file
@@ -71,7 +71,7 @@ os.makedirs(directory, exist_ok=True)
 
 
 MIN_FILES_PREFIX = [f"F{i}" for i in range(DEFAULT_MIN, DEFAULT_MAX)]
-offsets = {'F1': -0.0001512, 'F2': -0.000430, 'F3': -0.000222, 'F4': +0.000002}
+offsets = {'F1':-0.0018, 'F2':-0.0017, 'F3':-0.0011, 'F4':-0.000811,'F5': -3.6e-12, 'F6': -3.3e-12, 'F7': -0.6e-12, 'F8': -1.9e-12}
 
 plt.figure(figsize=(14, 8))
 for pref in MIN_FILES_PREFIX:
@@ -104,7 +104,7 @@ for pref in MIN_FILES_PREFIX:
     sort_indices = y_pts.argsort()
     y_pts = y_pts[sort_indices]
     amplitude = amplitude[sort_indices]
-    peaks, _ = find_peaks(amplitude, height=0.002, distance=10)
+    peaks, _ = find_peaks(amplitude, height=0.001, distance=10)
 
     plt.plot(y_pts, amplitude, label=pref)
     plt.plot(y_pts[peaks], amplitude[peaks], "x", label=f"{pref} peaks")
