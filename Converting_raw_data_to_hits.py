@@ -36,6 +36,7 @@ def extract_substring_from_path(input_path, base_folder):
 
 DEFAULT_MIN = 1
 DEFAULT_MAX = 5
+plt.rcParams['font.size'] = 20
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Generate a heatmap from a CSV file.')
@@ -61,7 +62,7 @@ start_postion = extract_numbers_from_filename(path_string)
 start_postion_co = (start_postion[3] + (start_postion[4] - start_postion[3]) * 0.5)
 print(start_postion_co)
 
-base_folder = "/Sweep_data"
+base_folder = "Sweep_data"
 extracted_string = extract_substring_from_path(path_string, base_folder)
 
 # makes the directory for the output files based on the name of the input file
@@ -71,11 +72,13 @@ os.makedirs(directory, exist_ok=True)
 
 
 MIN_FILES_PREFIX = [f"F{i}" for i in range(DEFAULT_MIN, DEFAULT_MAX)]
-offsets = {'F1':-0.0018, 'F2':-0.0017, 'F3':-0.0011, 'F4':-0.000811,'F5': -3.6e-12, 'F6': -3.3e-12, 'F7': -0.6e-12, 'F8': -1.9e-12}
+#offsets = {'F1':-0.0018, 'F2':-0.0017, 'F3':-0.0011, 'F4':-0.000811,'F5': -3.6e-12, 'F6': -3.3e-12, 'F7': -0.6e-12, 'F8': -1.9e-12}
 
 data_rows = []
 plt.figure(figsize=(14, 8))
+i = 1
 for pref in MIN_FILES_PREFIX:
+    
 
     files = DATA_DIR.glob(f"{pref}-sig*.csv")
     
@@ -85,7 +88,7 @@ for pref in MIN_FILES_PREFIX:
         x, y = parse_xy(f)
         hist_data = load_data(f)
         sig_min = load_data(f).mean()
-        #dn_min = load_data(f.with_name(f.name.replace("sig", "dn"))).mean()
+        dn_min = load_data(f.with_name(f.name.replace("sig", "dn"))).mean()
         
         counts, bins  = np.histogram(hist_data, bins=200)
         bins = bins[:-1]
@@ -94,44 +97,45 @@ for pref in MIN_FILES_PREFIX:
         
         df.to_csv( directory/f'histogram_{pref}_{start_postion_co+y:.1f}.txt', index=False)
 
-        #data = sig_min - dn_min
+        data = sig_min - dn_min
         y_pts.append(start_postion_co+y)
-        amplitude.append(-(sig_min))
+        amplitude.append(-(data))
     
     y_pts = np.array(y_pts)
     amplitude = np.array(amplitude)
-    amplitude += offsets.get(pref, 0)
+    #amplitude += offsets.get(pref, 0)
     
     sort_indices = y_pts.argsort()
     y_pts = y_pts[sort_indices]
     amplitude = amplitude[sort_indices]
-    peaks, _ = find_peaks(amplitude, height=0.001, distance=10)
+    peaks, _ = find_peaks(amplitude, height=0.002, distance=10)
     if amplitude[peaks].size == 0:
         max_peak_amplitude = 1
     else:
         max_peak_amplitude = np.max(amplitude[peaks])
         print(max_peak_amplitude)
     
-    plt.plot(y_pts, amplitude/max_peak_amplitude, label=pref)
+    plt.plot(y_pts, amplitude/max_peak_amplitude, label=f"pixel_{i}")
+
     
-    plt.plot(y_pts[peaks], amplitude[peaks], "x", label=f"{pref} peaks")
+    #plt.plot(y_pts[peaks], amplitude[peaks], "x", label=f"{pref} peaks")
     plt.xlabel("position (mm)")
-    plt.ylabel("mean Amplitude min pluse (V)")
+    plt.ylabel("normalized mean Amplitude min pluse (V)")
     print(f"peaks for {pref}: {y_pts[peaks]}")
     print(f"amplitude for {pref}: {amplitude[peaks]}")
     plt.tick_params(axis='y',which='major', direction="out", top="on", right="on", bottom="on", length=8, labelsize=15)
     plt.legend()
     data_rows.append(amplitude/max_peak_amplitude)
-
+    i += 1
 
 
 
 
 plot = extracted_string.replace('/', '_')
-plt.savefig(OUTPUT_DIR/ f'plots/plots_{plot}.png')
+plt.savefig(OUTPUT_DIR/ f'plots/plots_500v.png')
 
 
-#data_df = pd.DataFrame(data_rows, index=MIN_FILES_PREFIX, columns=y_pts)
-#csv_filename = OUTPUT_DIR / f'all_data_peaks_min_3.csv'
+data_df = pd.DataFrame(data_rows, index=MIN_FILES_PREFIX, columns=y_pts)
+csv_filename = OUTPUT_DIR / f'all_data_peaks_min_500v.csv'
 #print(data_df)
-#data_df.to_csv(csv_filename)
+data_df.to_csv(csv_filename)
